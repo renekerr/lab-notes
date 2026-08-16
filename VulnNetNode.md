@@ -257,14 +257,27 @@ uid=0(root) gid=0(root) groups=0(root)
 
 ```mermaid
 graph TD
-    A["Port scan\nrustscan port 8080"] --> B["Session cookie\nBase64 JSON object"]
-    B --> C["Insecure deserialization\nCVE-2017-5941 node-serialize"]
-    C --> D["Reverse shell\nas www"]
-    D --> E["sudo npm\nNOPASSWD serv-manage"]
-    E --> F["npm preinstall hook\nshell as serv-manage"]
-    F --> G["vulnnet-job.service writable\nsudo systemctl daemon-reload"]
-    G --> H["Option A: reverse shell\nas root"]
-    G --> I["Option B: SUID bash\nbash -p"]
+ subgraph RECON["RECON"]
+  A["rustscan puerto 8080"]
+ end
+ 
+ subgraph ENUM["ENUMERATION"]
+  B["Session cookie Base64 JSON"]
+ end
+ 
+ subgraph EXPL["EXPLOITATION"]
+  C["CVE-2017-5941 node-serialize"] --> D["Reverse shell as www"]
+ end
+ 
+ subgraph PRIVESC["PRIVESC"]
+  E["sudo npm NOPASSWD serv-manage"] --> F["npm preinstall hook"]
+  F --> G["vulnnet-job.service writable"]
+  G --> H["Reverse shell as root"]
+ end
+ 
+ A --> B
+ B --> C
+ D --> E
 ```
 
 ---

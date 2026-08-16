@@ -219,16 +219,34 @@ The Administrator hash (RID 500) enables pass-the-hash attacks on NTLM-enabled s
 
 ```mermaid
 graph TD
-    A["Recon\nnmap 3389,8080"] --> B["ThinVNC on 8080\nDigest auth realm"]
-    B --> C["CVE-2019-17662\npath traversal\nThinVnc.ini read"]
-    C --> D["Credentials extracted\nadmin_user found"]
-    D --> E["RDP session\ninteractive access"]
-    E --> F["WinPEAS enumeration\nmissing KB patches\nidentified"]
-    F --> G["CVE-2021-1675\nPrintNightmare viable"]
-    G --> H["RpcAddPrinterDriverEx abused\nmalicious DLL as driver"]
-    H --> I["New admin created\nprivesc_user\nlocal admin group"]
-    I --> J["Elevated cmd session\nHigh integrity token"]
-    J --> K["Mimikatz lsadump_sam\nall NTLM hashes\nextracted"]
+ subgraph RECON["RECON"]
+  A["nmap 3389 8080"]
+ end
+ 
+ subgraph ENUM["ENUMERATION"]
+  B["ThinVNC Digest auth"] --> C["CVE-2019-17662 path traversal"]
+  C --> D["ThinVnc.ini credenciales"]
+ end
+ 
+ subgraph EXPL["EXPLOITATION"]
+  E["RDP session acceso"]
+ end
+ 
+ subgraph PRIVESC["PRIVESC"]
+  F["WinPEAS KB patches faltantes"] --> G["CVE-2021-1675 PrintNightmare"]
+  G --> H["RpcAddPrinterDriverEx DLL maliciosa"]
+  H --> I["Admin user creado privesc_user"]
+  I --> J["Elevated cmd session"]
+ end
+ 
+ subgraph POST["POST-EXPLOITATION"]
+  K["Mimikatz lsadump_sam hashes"]
+ end
+ 
+ A --> B
+ D --> E
+ E --> F
+ J --> K
 ```
 
 ---

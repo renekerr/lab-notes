@@ -191,18 +191,31 @@ uid=0(root) gid=33(www-data) groups=33(www-data)
 
 ```mermaid
 graph TD
-    A["Port scan\nnmap"] --> B["WordPress 5.0\nidentified"]
-    B --> C["User enumeration\nwpscan"]
-    C --> D["kwheel user\nfound"]
-    D --> E["Brute-force\nHydra rockyou.txt"]
-    E --> F["Credentials\nobtained"]
-    F --> G["Dashboard access\nnon-admin user"]
-    G --> H["WordPress RCE\nCVE-2019-8943 Metasploit"]
-    H --> I["Shell www-data\nreverse connection"]
-    I --> J["SUID binary\nchecker found"]
-    J --> K["ltrace analysis\nenvironment variable"]
-    K --> L["Exploit variable\nadmin=1"]
-    L --> M["Root shell\nuid=0"]
+ subgraph RECON["RECON"]
+  A["nmap port scan"]
+ end
+ 
+ subgraph ENUM["ENUMERATION"]
+  B["WordPress 5.0 identificado"] --> C["wpscan user enumeration"]
+  C --> D["kwheel user encontrado"]
+ end
+ 
+ subgraph EXPL["EXPLOITATION"]
+  E["Hydra rockyou.txt brute-force"] --> F["Credenciales obtenidas"]
+  F --> G["Dashboard access no-admin"]
+  G --> H["CVE-2019-8943 RCE Metasploit"]
+  H --> I["www-data shell obtenida"]
+ end
+ 
+ subgraph PRIVESC["PRIVESC"]
+  J["SUID binary checker"] --> K["ltrace environment variable"]
+  K --> L["admin=1 variable exploit"]
+  L --> M["Root shell uid=0"]
+ end
+ 
+ A --> B
+ D --> E
+ I --> J
 ```
 
 ---

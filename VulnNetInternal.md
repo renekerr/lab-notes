@@ -285,18 +285,29 @@ TeamCity executes builds as root. The build step launches a reverse shell with m
 
 ```mermaid
 graph TD
-    A["Recon\nnmap - 11 open ports"] --> B["SMB Enumeration\nsmbclient - anonymous share access"]
-    B --> C["Flag via SMB\ntemp/services.txt"]
-    A --> D["NFS Enumeration\nshowmount - /opt/conf exported unrestricted"]
-    D --> E["Redis Credential\nnfs mount - redis.conf - requirepass"]
-    E --> F["Redis Access\nredis-cli - internal flag + authlist"]
-    F --> G["rsync Credentials\nbase64 decode - rsync-connect"]
-    G --> H["Home Download via rsync\nfiles/sys-internal - user flag + empty .ssh"]
-    H --> I["SSH Key Write via rsync\nauthorized keys uploaded to server"]
-    I --> J["SSH Access as sys-internal\nssh with private key"]
-    J --> K["TeamCity on localhost 8111\nsuperuser token in catalina.out"]
-    K --> L["SSH Tunnel\nssh -L 8111:localhost:8111"]
-    L --> M["Build step - reverse shell\nTeamCity executes as root"]
+ subgraph RECON["RECON"]
+  A["nmap 11 puertos abiertos"]
+ end
+ 
+ subgraph ENUM["ENUMERATION"]
+  B["SMB anonymous share access"] --> C["NFS showmount /opt/conf"]
+  D["Redis redis.conf requirepass"] --> E["rsync modules discovered"]
+ end
+ 
+ subgraph EXPL["EXPLOITATION"]
+  F["SSH key uploaded via rsync"] --> G["SSH access sys-internal"]
+ end
+ 
+ subgraph PRIVESC["PRIVESC"]
+  H["TeamCity localhost:8111"] --> I["Superuser token catalina.out"]
+  I --> J["SSH tunnel reverse shell"]
+  J --> K["Root via TeamCity build"]
+ end
+ 
+ A --> B
+ C --> D
+ E --> F
+ G --> H
 ```
 
 ---

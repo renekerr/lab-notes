@@ -217,16 +217,29 @@ Root's RSA private key is accessible from inside the container, giving full host
 
 ```mermaid
 graph TD
-    A["Recon\nnmap 4 ports"] --> B["Web enumeration\ngobuster ports 31331 and 8081"]
-    B --> C["JavaScript analysis\napi.js - ping and auth routes"]
-    C --> D["Command injection\nunsanitized ip parameter"]
-    D --> E["Command execution\nbackticks - ls, id, cat"]
-    E --> F["DB extraction\nutech.db.sqlite via --data-urlencode"]
-    F --> G["MD5 hashes\nr00t and admin"]
-    G --> H["hashcat cracking\nrockyou.txt"]
-    H --> I["SSH access\nr00t - docker group"]
-    I --> J["Docker privesc\nbash image - chroot /mnt"]
-    J --> K["Root on host\nuid=0"]
+ subgraph RECON["RECON"]
+  A["nmap 4 puertos"]
+ end
+ 
+ subgraph ENUM["ENUMERATION"]
+  B["gobuster puertos 31331 8081"] --> C["api.js javascript analysis"]
+  C --> D["Comando injection endpoint ping"]
+ end
+ 
+ subgraph EXPL["EXPLOITATION"]
+  E["Command execution backticks"] --> F["utech.db.sqlite extracted"]
+  F --> G["MD5 hashes r00t admin"]
+  G --> H["hashcat rockyou.txt cracking"]
+  H --> I["SSH access r00t docker group"]
+ end
+ 
+ subgraph PRIVESC["PRIVESC"]
+  J["Docker privesc bash image"] --> K["Root on host uid=0"]
+ end
+ 
+ A --> B
+ D --> E
+ I --> J
 ```
 
 ---
