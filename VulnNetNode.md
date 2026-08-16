@@ -1,6 +1,6 @@
 # VulnNet: Node
 
-| | |
+| Property | Value |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Easy |

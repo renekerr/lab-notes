@@ -1,6 +1,6 @@
 # Blog
 
-| | |
+| Property | Value |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Medium |

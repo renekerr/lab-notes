@@ -1,6 +1,6 @@
 # Atlas
 
-| | |
+| Property | Value |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Easy |

@@ -1,6 +1,6 @@
 # VulnNet: Internal
 
-| | |
+| Property | Value |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Easy/Medium |

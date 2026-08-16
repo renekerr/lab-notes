@@ -1,6 +1,6 @@
 # UltraTech
 
-| | |
+| Property | Value |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Medium |
