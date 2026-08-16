@@ -1,11 +1,11 @@
 # VulnNet: Node
 
-| Property | Value |
-|---|---|
-| **Platform** | TryHackMe |
-| **Difficulty** | Easy |
-| **URL** | https://tryhackme.com/room/vulnnetnode |
-| **Focus** | Node.js deserialization RCE (CVE-2017-5941) → sudo npm → writable systemd service |
+<table>
+<tr><td><strong>Platform</strong></td><td>TryHackMe</td></tr>
+<tr><td><strong>Difficulty</strong></td><td>Easy</td></tr>
+<tr><td><strong>URL</strong></td><td><a href="https://tryhackme.com/room/vulnnetnode">https://tryhackme.com/room/vulnnetnode</a></td></tr>
+<tr><td><strong>Focus</strong></td><td>Node.js deserialization RCE (CVE-2017-5941) → sudo npm → writable systemd service</td></tr>
+</table>
 
 ---
 

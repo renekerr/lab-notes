@@ -1,11 +1,11 @@
 # UltraTech
 
-| Property | Value |
-|---|---|
-| **Platform** | TryHackMe |
-| **Difficulty** | Medium |
-| **URL** | https://tryhackme.com/room/ultratech1 |
-| **Focus** | Unsanitized API parameter enables OS command injection via a DNS-error exfiltration channel, followed by Docker-group privilege escalation |
+<table>
+<tr><td><strong>Platform</strong></td><td>TryHackMe</td></tr>
+<tr><td><strong>Difficulty</strong></td><td>Medium</td></tr>
+<tr><td><strong>URL</strong></td><td><a href="https://tryhackme.com/room/ultratech1">https://tryhackme.com/room/ultratech1</a></td></tr>
+<tr><td><strong>Focus</strong></td><td>Unsanitized API parameter enables OS command injection via a DNS-error exfiltration channel, followed by Docker-group privilege escalation</td></tr>
+</table>
 
 ---
 

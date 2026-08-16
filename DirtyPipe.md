@@ -1,11 +1,11 @@
 # Dirty Pipe (CVE-2022-0847)
 
-| Property | Value |
-|---|---|
-| **Platform** | TryHackMe |
-| **Difficulty** | Medium |
-| **URL** | https://tryhackme.com/room/dirtypipe |
-| **Focus** | Kernel memory validation bug allowing arbitrary file overwrite; immediate privilege escalation to root |
+<table>
+<tr><td><strong>Platform</strong></td><td>TryHackMe</td></tr>
+<tr><td><strong>Difficulty</strong></td><td>Medium</td></tr>
+<tr><td><strong>URL</strong></td><td><a href="https://tryhackme.com/room/dirtypipe">https://tryhackme.com/room/dirtypipe</a></td></tr>
+<tr><td><strong>Focus</strong></td><td>Kernel memory validation bug allowing arbitrary file overwrite; immediate privilege escalation to root</td></tr>
+</table>
 
 ---
 

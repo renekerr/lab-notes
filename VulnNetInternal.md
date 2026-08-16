@@ -1,11 +1,11 @@
 # VulnNet: Internal
 
-| Property | Value |
-|---|---|
-| **Platform** | TryHackMe |
-| **Difficulty** | Easy/Medium |
-| **URL** | https://tryhackme.com/room/vulnnetinternal |
-| **Focus** | Service enumeration chain: NFS → Redis → rsync → SSH → TeamCity |
+<table>
+<tr><td><strong>Platform</strong></td><td>TryHackMe</td></tr>
+<tr><td><strong>Difficulty</strong></td><td>Easy/Medium</td></tr>
+<tr><td><strong>URL</strong></td><td><a href="https://tryhackme.com/room/vulnnetinternal">https://tryhackme.com/room/vulnnetinternal</a></td></tr>
+<tr><td><strong>Focus</strong></td><td>Service enumeration chain: NFS → Redis → rsync → SSH → TeamCity</td></tr>
+</table>
 
 ---
 

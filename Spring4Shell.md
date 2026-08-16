@@ -1,11 +1,11 @@
 # Spring4Shell (CVE-2021-22911)
 
-| Property | Value |
-|---|---|
-| **Platform** | TryHackMe |
-| **Difficulty** | Medium |
-| **URL** | https://tryhackme.com/room/spring4shell |
-| **Focus** | Property chaining bypass of Spring MVC auto-binding filter; RCE via JSP pattern injection |
+<table>
+<tr><td><strong>Platform</strong></td><td>TryHackMe</td></tr>
+<tr><td><strong>Difficulty</strong></td><td>Medium</td></tr>
+<tr><td><strong>URL</strong></td><td><a href="https://tryhackme.com/room/spring4shell">https://tryhackme.com/room/spring4shell</a></td></tr>
+<tr><td><strong>Focus</strong></td><td>Property chaining bypass of Spring MVC auto-binding filter; RCE via JSP pattern injection</td></tr>
+</table>
 
 ---
 

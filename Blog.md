@@ -1,11 +1,11 @@
 # Blog
 
-| Property | Value |
-|---|---|
-| **Platform** | TryHackMe |
-| **Difficulty** | Medium |
-| **URL** | https://tryhackme.com/room/blog |
-| **Focus** | WordPress RCE (CVE-2019-8943) + SUID environment variable privilege escalation |
+<table>
+<tr><td><strong>Platform</strong></td><td>TryHackMe</td></tr>
+<tr><td><strong>Difficulty</strong></td><td>Medium</td></tr>
+<tr><td><strong>URL</strong></td><td><a href="https://tryhackme.com/room/blog">https://tryhackme.com/room/blog</a></td></tr>
+<tr><td><strong>Focus</strong></td><td>WordPress RCE (CVE-2019-8943) + SUID environment variable privilege escalation</td></tr>
+</table>
 
 ---
 

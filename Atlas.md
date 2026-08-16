@@ -1,11 +1,11 @@
 # Atlas
 
-| Property | Value |
-|---|---|
-| **Platform** | TryHackMe |
-| **Difficulty** | Easy |
-| **URL** | https://tryhackme.com/room/atlas |
-| **Focus** | Path traversal on ThinVNC → RDP access → PrintNightmare privilege escalation → credential extraction |
+<table>
+<tr><td><strong>Platform</strong></td><td>TryHackMe</td></tr>
+<tr><td><strong>Difficulty</strong></td><td>Easy</td></tr>
+<tr><td><strong>URL</strong></td><td><a href="https://tryhackme.com/room/atlas">https://tryhackme.com/room/atlas</a></td></tr>
+<tr><td><strong>Focus</strong></td><td>Path traversal on ThinVNC → RDP access → PrintNightmare privilege escalation → credential extraction</td></tr>
+</table>
 
 ---
 
