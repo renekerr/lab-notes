@@ -1,6 +1,5 @@
 # UltraTech
 
-| | |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Medium |

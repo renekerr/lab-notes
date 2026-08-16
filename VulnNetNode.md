@@ -1,6 +1,5 @@
 # VulnNet: Node
 
-| | |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Easy |

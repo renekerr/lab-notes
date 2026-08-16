@@ -1,6 +1,5 @@
 # Atlas
 
-| | |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Easy |
