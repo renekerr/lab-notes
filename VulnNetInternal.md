@@ -1,5 +1,6 @@
 # VulnNet: Internal
 
+| | |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Easy/Medium |

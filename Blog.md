@@ -1,5 +1,6 @@
 # Blog
 
+| | |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Medium |

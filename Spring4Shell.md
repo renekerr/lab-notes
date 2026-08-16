@@ -1,5 +1,6 @@
 # Spring4Shell (CVE-2021-22911)
 
+| | |
 |---|---|
 | **Platform** | TryHackMe |
 | **Difficulty** | Medium |
