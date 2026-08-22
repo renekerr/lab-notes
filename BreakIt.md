@@ -5,7 +5,8 @@
 | **Platform** | TryHackMe |
 | **Difficulty** | Medium |
 | **URL** | https://tryhackme.com/room/breakit |
-| **Focus** | Multi-layer encoding chains using CyberChef and bit-rotation operations |
+| **Category** | Encoding / Cryptography / Bit Operations |
+| **Type** | Puzzle (chained decoding) |
 
 ---
 
