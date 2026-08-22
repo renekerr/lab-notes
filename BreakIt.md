@@ -1,12 +1,11 @@
 # Break It
 
-| | |
-|---|---|
-| **Platform** | TryHackMe |
-| **Difficulty** | Medium |
-| **URL** | https://tryhackme.com/room/breakit |
-| **Category** | Encoding / Cryptography / Bit Operations |
-| **Type** | Puzzle (chained decoding) |
+<table>
+<tr><td><strong>Platform</strong></td><td>TryHackMe</td></tr>
+<tr><td><strong>Difficulty</strong></td><td>Medium</td></tr>
+<tr><td><strong>URL</strong></td><td><a href="https://tryhackme.com/room/breakit">https://tryhackme.com/room/breakit</a></td></tr>
+<tr><td><strong>Focus</strong></td><td>Multi-layer encoding chains: Base32, Base58, Base64, Base85, Base91 → classical ciphers (ROT13, ROT47, Vigenère) → bit rotation operations</td></tr>
+</table>
 
 ---
 
