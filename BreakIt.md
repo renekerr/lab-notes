@@ -280,9 +280,13 @@ graph TD
  
  subgraph EXPL["EXPLOITATION"]
   E["Task 1: Decode 5 base chains<br/>single to 11 layers"]
-  F["Task 2: Decode 4 cipher+base chains<br/>ROT13, ROT47, Vigenère"]
+  F["Task 2: Decode 4 cipher+base chains<br/>ROT13, ROT47, Vigenere"]
   G["Task 3: Decode 3 bit rotation chains<br/>arithmetic and logical shifts"]
   H["Apply CyberChef operations<br/>or CLI tools per layer"]
+ end
+ 
+ subgraph POST["POST-EXPLOITATION"]
+  I["All 12 flags collected<br/>REDACTED"]
  end
  
  A --> B
@@ -292,9 +296,5 @@ graph TD
  E --> F
  F --> G
  G --> H
- H --> I["Flags collected<br/>REDACTED"]
- 
- subgraph POST["POST-EXPLOITATION"]
-  I["Complete all 12 challenges"]
- end
+ H --> I
 ```
