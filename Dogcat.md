@@ -212,23 +212,23 @@ graph TD
  subgraph RECON["RECON"]
   A["nmap ports 22 and 80"]
  end
-
+ 
  subgraph ENUM["ENUMERATION"]
   B["gobuster reveals index.php view param"] --> C["LFI confirmed via php filter wrapper"]
  end
-
+ 
  subgraph EXPL["EXPLOITATION"]
   D["Extension bypass with ext parameter"] --> E["Log poisoning access.log via User-Agent"]
   E --> F["RCE confirmed as www-data"]
   F --> G["Reverse shell delivered and TTY upgraded"]
  end
-
+ 
  subgraph PRIVESC["PRIVESC"]
   H["sudo env GTFOBins root in container"] --> I["Docker detected via dockerenv and bind mounts"]
   I --> J["backup.sh bind mount overwritten with reverse shell"]
   J --> K["Root shell on host"]
  end
-
+ 
  A --> B
  C --> D
  G --> H

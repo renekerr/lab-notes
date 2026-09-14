@@ -142,7 +142,7 @@ graph TD
  subgraph RECON["RECON"]
   A["nmap port scan"]
  end
-
+ 
  subgraph ENUM["ENUMERATION"]
   B["ASCII art with chemical symbols"] --> C["Atomic number to ASCII decoding"]
   C --> D["Hidden file PI3T.PNg"]
@@ -151,15 +151,15 @@ graph TD
   F --> G["Piet program execution"]
   G --> H["nagiosadmin credentials obtained"]
  end
-
+ 
  subgraph EXPL["EXPLOITATION"]
   I["Nagios XI 5.5.6 identified as vulnerable"] --> J["Authenticated RCE via Metasploit CVE-2019-15949"]
  end
-
+ 
  subgraph POST["POST-EXPLOITATION"]
   K["Direct root session via getprofile.sh sudo chain"]
  end
-
+ 
  A --> B
  H --> I
  J --> K
