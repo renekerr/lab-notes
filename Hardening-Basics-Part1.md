@@ -357,6 +357,18 @@ sudo deluser <usuario> lxd
 
 ## [2. FIREWALL]
 
+### 2.0 — Definición y tipos de firewall
+
+Un firewall es, según la definición de Cisco, un "dispositivo de seguridad de red que monitoriza el tráfico de red entrante y saliente y decide si permite o bloquea tráfico específico en función de un conjunto definido de reglas de seguridad". Existen dos tipos principales:
+
+**Host-Based (basado en el host)** Se instala en máquinas individuales y monitoriza el tráfico de esa máquina. Windows incluye Windows Firewall por defecto en todos sus sistemas operativos. Los administradores del sistema pueden configurar reglas en un Windows Server que actúe como firewall para toda la red.
+
+**Network-Based (basado en la red)** Es un dispositivo hardware ubicado en el borde de la red interna e Internet pública. Tiene dos o más tarjetas de red y todo el tráfico pasa por él antes de entrar en la red privada o salir a Internet. Fabricantes como Cisco ofrecen líneas de productos (p. ej. Firepower) que son firewalls basados en red y protegen contra amenazas externas e internas.
+
+**Web Application Firewall (WAF)** Es un dispositivo especializado ubicado en la DMZ (zona desmilitarizada) de una red que protege el servidor web de amenazas. Sin embargo, no debe ser la única protección: un firewall basado en red en el borde de la red añade una capa adicional de seguridad.
+
+**Nota:** Esta sala se centra en Ubuntu/Linux y en el firewall basado en host de Linux, `iptables`.
+
 ### 2.1 — iptables y netfilter
 
 iptables es una interfaz para `netfilter`, el firewall real de Linux. Ubuntu incluye además `ufw`, un frontend más sencillo. Las cuatro tablas de iptables:
@@ -447,9 +459,9 @@ sudo iptables-restore < /etc/iptables/rules.v4
 
 - `iptables-save` vuelca las reglas a un fichero; `iptables-persistent` las recarga al arrancar; `iptables-restore` las aplica desde el fichero.
 
-### 2.5 — UFW
+### 2.5 — UFW (Firewall No Complicado)
 
-Frontend amigable de iptables (IPv4/IPv6), desactivado por defecto. Requiere root.
+UFW está diseñado para simplificar la creación de reglas de firewall. Proporciona una forma sencilla de crear un firewall basado en IPv4 o IPv6. Está deshabilitado por defecto y requiere root.
 
 Ver estado:
 
@@ -457,22 +469,59 @@ Ver estado:
 sudo ufw status
 ```
 
-Activar o desactivar:
+Activar:
 
 ```bash
 sudo ufw enable
+```
+
+Desactivar:
+
+```bash
 sudo ufw disable
 ```
 
-Permitir o denegar por puerto y por servicio:
+**Permitir y denegar puertos**
+
+Permite o deniega tráfico por puerto:
 
 ```bash
 sudo ufw allow 9000/tcp
 sudo ufw deny 23
-sudo ufw allow ssh
 ```
 
-- Formato: `sudo ufw <allow|deny> <puerto>/<protocolo>` o `<servicio>`. UFW no requiere guardar manualmente. Sintaxis avanzada (IPs, rangos, subredes): https://help.ubuntu.com/community/UFW
+- Formato: `sudo ufw <allow|deny> <puerto>/<protocolo opcional>`.
+- Para permitir TCP en el puerto 9000: `sudo ufw allow 9000/tcp`.
+- Para denegar el tráfico de telnet en el puerto 23: `sudo ufw deny 23`.
+
+**Permitir y denegar servicios**
+
+UFW permite usar nombres de servicios en lugar de puertos:
+
+```bash
+sudo ufw allow ssh
+sudo ufw deny http
+```
+
+- Formato: `sudo ufw <allow|deny> <nombre_servicio>`.
+- Permite SSH: `sudo ufw allow ssh`.
+- Se puede denegar de la misma forma para bloquear servicios.
+
+**Sintaxis avanzada**
+
+Existe sintaxis más avanzada para permitir o denegar direcciones IP específicas, rangos o subredes. Para más información: https://help.ubuntu.com/community/UFW
+
+---
+
+## [RESUMEN DEL CAPÍTULO 2]
+
+Se han cubierto iptables y ufw, que son las dos formas más comunes de configurar un firewall en un servidor Ubuntu. Esperemos hayas aprendido cómo proteger tu sistema usando estas herramientas fundamentales de seguridad de red.
+
+---
+
+## [RESUMEN DE LA SALA]
+
+Esto concluye la Parte 1 de esta serie. Para terminar los últimos dos capítulos (SSH y cifrado, y Control de acceso obligatorio / MAC), dirígete a la Parte 2.
 
 ---
 
@@ -762,8 +811,9 @@ operator    ALL = sudoedit /etc/fstab
 
 ## Notas rápidas
 
-- Parte 1 cubre Cap. 1 (cuentas) y Cap. 2 (firewall); SSH/cifrado y MAC están en Parte 2.
-- Eje: mínimo privilegio.
+- Parte 1 completa: Cap. 1 (cuentas de usuario) y Cap. 2 (seguridad del firewall). SSH/cifrado y MAC están en Parte 2.
+- Firewalls: dos tipos principales (host-based y network-based); WAF no es sustituto de un firewall de borde.
+- Eje de toda la sala: mínimo privilegio.
 - `-a` en `usermod -aG` conserva los grupos; sin él se reemplazan.
 - Endurecer root = tres capas (shell nologin, `PermitRootLogin no`, PAM); nologin no afecta a `sudo -s`.
 - Editores con sudo = privesc; usar `sudoedit`.
@@ -771,4 +821,5 @@ operator    ALL = sudoedit /etc/fstab
 - pwquality para complejidad, pam_pwhistory para historial (`/etc/security/opasswd`), login.defs para caducidad.
 - Grupo lxd = privesc; quitarlo. `adduser` no mete en grupos predefinidos.
 - iptables es frontend de netfilter; tablas Filter/NAT/Mangle/Security; cadenas INPUT/FORWARD/OUTPUT; ACL de arriba abajo; cerrar con denegación implícita; persistir con iptables-persistent.
+- UFW es el frontend amigable de iptables; no requiere guardar manualmente.
 - En el laboratorio: snapshot antes de tocar sudoers/PAM/sshd y permitir SSH antes del DROP.
